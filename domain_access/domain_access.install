@@ -44,3 +44,22 @@ function domain_access_update_8001() {
   $config->set('node_advanced_tab_open', 0);
   $config->save(TRUE);
 }
+
+/**
+ * Remove default value callback from domain access fields.
+ */
+function domain_access_update_8002() {
+  $field_config_storage = \Drupal::entityTypeManager()->getStorage('field_config');
+  $field_configs = $field_config_storage->loadByProperties(['field_name' => DOMAIN_ACCESS_FIELD]);
+
+  if ($field_configs) {
+    /** @var \Drupal\Core\Field\FieldConfigInterface $field_config */
+    foreach ($field_configs as $field_config) {
+      $field_config->setDefaultValueCallback(NULL);
+      $field_config->setDefaultValue([]);
+      $field_config->save();
+      $field_ids[] = $field_config->id();
+    }
+  }
+  return t('Removed default value callbacks from fields: @fields', ['@fields' => implode(', ', $field_ids)]);
+}
